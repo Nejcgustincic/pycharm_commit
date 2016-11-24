@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{%block title%}
+Home
+{%endblock title%}
+{% block vsebina_strani %}
+    <h1>Hello, SmartNinja!</h1>
+    <form method="post" action ="/rezultat">
+        <label for="vpisi-sporocilo">Vpišite svoje sporočilo </label>
+        <input name="sporocilo" id="vpisi-sporocilo">
+        <br>
+        <label for="input-ime">Vpišite svoje ime</label>
+        <input name="Ime" id="input-ime">
+        <br>
+        <label for="input-stevilka">Kolikokrat pa?</label>
+        <input name="stevilka" id="input-stevilka" type="number">
+
+        <button type="submit">Oddaj sporočilo</button>
+    </form>
+
+{% endblock vsebina_strani %}
