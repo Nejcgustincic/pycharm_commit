@@ -2,7 +2,7 @@
 import os
 import jinja2
 import webapp2
-
+from models import Sporocilo
 import random
 template_dir = os.path.join(os.path.dirname(__file__), "templates")
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir), autoescape=False)
@@ -33,8 +33,12 @@ class MainHandler(BaseHandler):
 
 class RezultatHandler(BaseHandler):
     def post(self):
-        besedilo = self.request.get("sporocilo")
         ime = self.request.get("Ime")
+        besedilo = self.request.get("sporocilo")
+        sporocilo = Sporocilo(besedilo_sporocila = besedilo, avtor=ime)
+        sporocilo.put()
+
+
         stevilka = self.request.get("stevilka")
         izzrebane=[]
         for j in range(int(stevilka)):
@@ -54,9 +58,62 @@ class AboutHandler(BaseHandler):
 class ContactHandler(BaseHandler):
     def get(self):
         return self.render_template("contact.html")
+class SporocilaHandler(BaseHandler):
+    def get(self):
 
+        sporocila = Sporocilo.query(Sporocilo.je_izbrisano == False).fetch()
+        params = {"sporocila":sporocila}
+        self.render_template("vsa_sporocila.html", params=params)
 
+class PosameznoSporociloHandler(BaseHandler):
+    def get(self, sporocilo_id):
+        sporocilo = Sporocilo.get_by_id(int(sporocilo_id))
+        params = {"sporocilo" : sporocilo}
+        return self.render_template("posamezno_sporocilo.html",params=params)
 
+class EditHandler(BaseHandler):
+    def get(self, sporocilo_id):
+        sporocilo = Sporocilo.get_by_id(int(sporocilo_id))
+        params ={"sporocilo":sporocilo}
+        return self.render_template("uredi_sporocilo.html",params=params)
+
+    def post(self , sporocilo_id):
+        sporocilo = Sporocilo.get_by_id(int(sporocilo_id))
+        sporocilo.besedilo_sporocila = self.request.get("text-sporocila")
+        sporocilo.avtor = self.request.get("ime")
+        sporocilo.put()
+        return self.redirect_to("seznam_sporocil")
+
+class DeleteHandler(BaseHandler):
+    def get(self, sporocilo_id):
+        sporocilo = Sporocilo.get_by_id(int(sporocilo_id))
+        params ={"sporocilo":sporocilo}
+        return self.render_template("izbrisi.html",params=params)
+
+    def post(self , sporocilo_id):
+        sporocilo = Sporocilo.get_by_id(int(sporocilo_id))
+        sporocilo.je_izbrisano = True
+        sporocilo.put()
+        return self.redirect_to("seznam_sporocil")
+
+class IzbrisanaSporocilaHandler(BaseHandler):
+    def get(self):
+
+        sporocila = Sporocilo.query(Sporocilo.je_izbrisano == True).fetch()
+        params = {"sporocila":sporocila}
+        self.render_template("kos.html", params=params)
+
+class ObnoviHandler(BaseHandler):
+    def get(self, sporocilo_id):
+        sporocilo = Sporocilo.get_by_id(int(sporocilo_id))
+        params ={"sporocilo":sporocilo}
+        return self.render_template("obnovi.html",params=params)
+
+    def post(self , sporocilo_id):
+        sporocilo = Sporocilo.get_by_id(int(sporocilo_id))
+        sporocilo.je_izbrisano = False
+        sporocilo.put()
+        return self.redirect_to("kos")
 
 app = webapp2.WSGIApplication([
     webapp2.Route('/', MainHandler),
@@ -64,4 +121,12 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/mywebsite.html',OsnovaHandler),
     webapp2.Route('/about',AboutHandler),
     webapp2.Route('/contact',ContactHandler),
+    webapp2.Route('/vsa_sporocila',SporocilaHandler, name="seznam_sporocil"),
+    webapp2.Route('/sporocila/<sporocilo_id:\d+>',PosameznoSporociloHandler),
+    webapp2.Route('/sporocila/<sporocilo_id:\d+>/edit',EditHandler),
+    webapp2.Route('/sporocila/<sporocilo_id:\d+>/delete',DeleteHandler),
+    webapp2.Route('/sporocila/<sporocilo_id:\d+>/obnovi',ObnoviHandler),
+    webapp2.Route('/deleted',IzbrisanaSporocilaHandler, name="kos"),
+
+
 ], debug=True)

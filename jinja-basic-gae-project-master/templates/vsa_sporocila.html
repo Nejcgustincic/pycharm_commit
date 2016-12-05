@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <ul>
+        {% for sporocilo in sporocila %}
+            <li><a href ="/sporocila/{{sporocilo.key.id()}}">{{ sporocilo.besedilo_sporocila }}
+                {{ sporocilo.poslano}}
+                {{ sporocilo.avtor}}
+                </a>></li>>
+        {% endfor%}
+    </ul>
+</body>
+</html>
